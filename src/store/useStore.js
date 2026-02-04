@@ -13,12 +13,17 @@ const useStore = create((set) => ({
     setActiveTool: (toolId) => set({ activeTool: toolId }),
 
     // Battery Health State (Manual Input Persistence)
-    batteryStats: {
-        designCapacity: 48944,
-        fullChargeCapacity: 28029,
-        cycleCount: null,
+    // Persisted to localStorage to ensure machine-specific battery data survivors refreshes
+    batteryStats: JSON.parse(localStorage.getItem('hackrore_battery_meta')) || {
+        designCapacity: 0,
+        fullChargeCapacity: 0,
+        cycleCount: 0,
     },
-    setBatteryStats: (stats) => set({ batteryStats: stats }),
+    setBatteryStats: (stats) => set((state) => {
+        const newData = { ...state.batteryStats, ...stats };
+        localStorage.setItem('hackrore_battery_meta', JSON.stringify(newData));
+        return { batteryStats: newData };
+    }),
 
     // Theme/Settings (Future proofing)
     soundEnabled: true,

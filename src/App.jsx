@@ -10,14 +10,13 @@ import DisplayCheck from './components/DisplayCheck';
 import MediaTester from './components/MediaTester';
 import InputTester from './components/InputTester';
 import AudioTester from './components/AudioTester';
-import BatteryStatus from './components/BatteryStatus';
+import BatteryProBridge from './components/BatteryProBridge';
 import StorageBenchmark from './components/StorageBenchmark';
 import NetworkTest from './components/NetworkTest';
 import CpuTest from './components/CpuTest';
 import GpuTest from './components/GpuTest';
 import TouchTest from './components/TouchTest';
 import QCWizard from './components/QCWizard';
-import HealthStatusCard from './components/HealthStatusCard';
 
 
 function App() {
@@ -37,7 +36,7 @@ function App() {
       case 'gpu': return <GpuTest />;
       case 'touch': return <TouchTest />;
       case 'qc': return <QCWizard />;
-      case 'battery': return <HealthStatusCard />;
+      case 'battery': return <BatteryProBridge />;
       default: return <Dashboard />;
     }
   };

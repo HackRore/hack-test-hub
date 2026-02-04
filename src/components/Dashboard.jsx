@@ -2,7 +2,7 @@ import React from 'react';
 import useStore from '../store/useStore';
 import { Keyboard, Monitor, Camera, MousePointer, Volume2, HardDrive, Cpu, Activity, FileText, Globe, Wifi, Mic, Speaker, Battery } from 'lucide-react';
 import { generateReport } from '../utils/generateReport';
-import BatteryStatus from './BatteryStatus';
+import BatteryMiniStatus from './BatteryMiniStatus';
 
 const deviceTests = [
     { id: 'media', title: 'Camera and microphone test', icon: Camera, desc: 'Test webcam and microphone with device selection.', btn: 'Launch Test', qcId: 'media' },
@@ -109,7 +109,7 @@ const Dashboard = () => {
 
             {/* Context bar (Report & Battery) */}
             <div className="flex flex-col md:flex-row justify-end items-center gap-6 mb-12">
-                <BatteryStatus />
+                <BatteryMiniStatus />
                 <button
                     onClick={handleGenerateReport}
                     className="flex items-center gap-2 px-6 py-3 bg-primary/10 text-primary border border-primary rounded-lg hover:bg-primary hover:text-black transition-all text-sm font-black tracking-widest"
