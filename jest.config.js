@@ -9,7 +9,7 @@ export default {
         'lucide-react': '<rootDir>/__mocks__/lucide-react.js',
     },
     transformIgnorePatterns: [
-        '/node_modules/(?!(lucide-react|zustand|clsx|tailwind-merge)/)'
+        '/node_modules/(?!(lucide-react|zustand|clsx|tailwind-merge|framer-motion|popmotion|framesync|style-value-types)/)'
     ],
     setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
 };

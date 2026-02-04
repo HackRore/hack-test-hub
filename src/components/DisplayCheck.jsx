@@ -9,6 +9,19 @@ const DisplayCheck = () => {
     const { setActiveTool } = useStore();
     const [colorIndex, setColorIndex] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [displayInfo, setDisplayInfo] = useState(null);
+
+    useEffect(() => {
+        // Gather display information
+        const info = {
+            resolution: `${window.screen.width} × ${window.screen.height}`,
+            availableResolution: `${window.screen.availWidth} × ${window.screen.availHeight}`,
+            colorDepth: `${window.screen.colorDepth}-bit`,
+            pixelRatio: window.devicePixelRatio || 1,
+            orientation: window.screen.orientation?.type || 'N/A'
+        };
+        setDisplayInfo(info);
+    }, []);
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -65,9 +78,35 @@ const DisplayCheck = () => {
                         </button>
                     </div>
 
-                    <div className="text-center max-w-xl">
+                    <div className="text-center max-w-2xl">
                         <h2 className="text-3xl font-bold font-mono text-gray-100 mb-6">DISPLAY DIAGNOSTIC</h2>
-                        <p className="text-gray-400 mb-8 font-mono">
+
+                        {/* Display Info Panel */}
+                        {displayInfo && (
+                            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-6 text-left">
+                                <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Detected Display</h3>
+                                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                                    <div>
+                                        <span className="text-gray-500">Resolution:</span>
+                                        <span className="text-gray-300 ml-2">{displayInfo.resolution}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500">Available:</span>
+                                        <span className="text-gray-300 ml-2">{displayInfo.availableResolution}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500">Color Depth:</span>
+                                        <span className="text-gray-300 ml-2">{displayInfo.colorDepth}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500">Pixel Ratio:</span>
+                                        <span className="text-gray-300 ml-2">{displayInfo.pixelRatio}x</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <p className="text-gray-400 mb-8 font-mono text-sm">
                             Checks for dead pixels and color accuracy.
                             <br />Click "START TEST" to enter fullscreen.
                             <br />Tap screen or Spacebar to cycle colors.
@@ -76,7 +115,7 @@ const DisplayCheck = () => {
 
                         <button
                             onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-                            className="flex items-center gap-2 bg-primary text-black px-8 py-3 rounded font-bold hover:bg-secondary hover:scale-105 transition-all"
+                            className="flex items-center gap-2 bg-primary text-black px-8 py-3 rounded font-bold hover:bg-secondary hover:scale-105 transition-all mx-auto"
                         >
                             <Maximize className="h-5 w-5" />
                             START TEST

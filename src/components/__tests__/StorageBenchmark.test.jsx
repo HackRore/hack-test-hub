@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import StorageBenchmark from '../components/StorageBenchmark';
+import StorageBenchmark from '../StorageBenchmark';
 
 describe('StorageBenchmark Component', () => {
     test('renders initial state correctly', () => {

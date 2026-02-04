@@ -20,7 +20,7 @@ export const generateReport = (specs, storageResults, batteryStatus, extraData =
     doc.text('CERTIFIED TECHNICIAN REPORT', 14, 30);
 
     doc.setTextColor(150, 150, 150);
-    doc.text(new Date().toLocaleString(), pageWidth - 14, 20, { align: 'right' });
+    doc.text(`COMPLETION: ${new Date().toLocaleString()}`, pageWidth - 14, 20, { align: 'right' });
     doc.text(`SN: ${serial}`, pageWidth - 14, 30, { align: 'right' });
     doc.text(`Tech: ${technician}`, pageWidth - 14, 40, { align: 'right' });
 
@@ -73,10 +73,14 @@ export const generateReport = (specs, storageResults, batteryStatus, extraData =
         doc.text('2. POWER MANAGEMENT', 14, yPos);
         yPos += 10;
 
+        const healthVal = extraData.batteryAdvanced?.health
+            ? `${extraData.batteryAdvanced.health}% (Advanced)`
+            : 'Pending Analysis';
+
         const batData = [
-            ['Battery Level', `${Math.round(batteryStatus.level * 100)}%`],
+            ['Battery Charge', `${Math.round(batteryStatus.level * 100)}%`],
             ['Charging Status', batteryStatus.charging ? 'Plugged In (AC)' : 'Discharging (DC)'],
-            ['Health Assessment', Math.round(batteryStatus.level * 100) > 80 ? 'EXCELLENT' : 'NORMAL']
+            ['Calculated Health', healthVal]
         ];
 
         doc.autoTable({
@@ -168,6 +172,22 @@ export const generateReport = (specs, storageResults, batteryStatus, extraData =
     }
 
     doc.text('CUSTOMER SIGNATURE', pageWidth / 2 + 14, yPos + 10);
+
+    // -- NOTES (If Available) --
+    if (notes && notes.trim().length > 0) {
+        doc.addPage();
+        doc.setFillColor(10, 10, 10);
+        doc.rect(0, 0, pageWidth, 20, 'F');
+        doc.setTextColor(0, 255, 65);
+        doc.setFontSize(14);
+        doc.text('ADDITIONAL TECHNICIAN NOTES', 14, 13);
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        const splitNotes = doc.splitTextToSize(notes, pageWidth - 28);
+        doc.text(splitNotes, 14, 35);
+    }
 
     // Save
     doc.save(`HackRore_Report_${serial}.pdf`);

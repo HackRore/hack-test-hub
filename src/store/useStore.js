@@ -23,6 +23,15 @@ const useStore = create((set) => ({
     // Theme/Settings (Future proofing)
     soundEnabled: true,
     toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
+
+    // QC Wizard State
+    qcResults: {}, // { testId: 'pass' | 'fail' | null }
+    setQCResult: (id, status) => set((state) => ({
+        qcResults: { ...state.qcResults, [id]: status }
+    })),
+    resetQC: () => set({ qcResults: {}, wizardStep: 0 }),
+    wizardStep: 0,
+    setWizardStep: (step) => set({ wizardStep: step }),
 }));
 
 export default useStore;

@@ -5,17 +5,18 @@ import { FileText, CheckCircle, XCircle, ArrowRight, Clipboard, Zap, AlertTriang
 
 const STEPS = [
     { id: 'meta', title: 'Device Information' },
-    { id: 'battery', title: 'Power System (Advanced)' }, // New Step
+    { id: 'battery', title: 'Power System (Advanced)' },
     { id: 'display', title: 'Visual Inspection (Display)' },
     { id: 'input', title: 'Input Devices (Keys/Touch)' },
-    { id: 'audio', title: 'Audio System (Spk/Mic)' },
+    { id: 'media', title: 'Camera and microphone test' },
+    { id: 'audio', title: 'Audio System (Speakers)' },
     { id: 'thermal', title: 'Thermal & Fans' },
     { id: 'finish', title: 'Complete' }
 ];
 
 const QCWizard = () => {
-    const { setActiveTool, batteryStats, setBatteryStats } = useStore();
-    const [stepIndex, setStepIndex] = useState(0);
+    const { setActiveTool, batteryStats, setBatteryStats, setQCResult, wizardStep, setWizardStep } = useStore();
+    const [stepIndex, setStepIndex] = useState(wizardStep || 0);
     const [formData, setFormData] = useState({ serial: '', technician: '', notes: '' });
     // Battery Advanced Data - Local state synced to store
     const [batteryData, setBatteryData] = useState({
@@ -97,11 +98,13 @@ const QCWizard = () => {
     };
 
     const handlePass = (testName) => {
+        setQCResult(currentStep.id, 'pass');
         setResults([...results, { test: testName, status: 'PASS' }]);
         setStepIndex(prev => prev + 1);
     };
 
     const handleFail = (testName) => {
+        setQCResult(currentStep.id, 'fail');
         setResults([...results, { test: testName, status: 'FAIL' }]);
         setStepIndex(prev => prev + 1);
     };

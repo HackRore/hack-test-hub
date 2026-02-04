@@ -5,16 +5,38 @@ import { Volume2, Volume1, ArrowLeft, Activity, Speaker, VolumeX } from 'lucide-
 const AudioTester = () => {
     const { setActiveTool } = useStore();
     const [activeChannel, setActiveChannel] = useState(null);
-    const [testType, setTestType] = useState('tone'); // 'tone' or 'pink'
+    const [testType, setTestType] = useState('tone'); // 'tone', 'pink', or 'music'
     const [frequency, setFrequency] = useState(440);
+
+    // Device Selection State
+    const [speakers, setSpeakers] = useState([]);
+    const [selectedSpeaker, setSelectedSpeaker] = useState('');
 
     // Refs for audio engine
     const audioCtxRef = useRef(null);
     const oscRef = useRef(null);
     const noiseRef = useRef(null);
+    const audioFileRef = useRef(null); // For the mpeg file
     const analyzerRef = useRef(null);
     const canvasRef = useRef(null);
     const rafRef = useRef(null);
+
+    // Enumerate audio output devices
+    useEffect(() => {
+        const getDevices = async () => {
+            try {
+                const allDevices = await navigator.mediaDevices.enumerateDevices();
+                const audioOutputs = allDevices.filter(d => d.kind === 'audiooutput');
+                setSpeakers(audioOutputs);
+                if (audioOutputs.length > 0) {
+                    setSelectedSpeaker(audioOutputs[0].deviceId);
+                }
+            } catch (err) {
+                console.error("Device Enum Error:", err);
+            }
+        };
+        getDevices();
+    }, []);
 
     // Visualizer Loop
     const startVisualizer = (ctx, source) => {
@@ -75,8 +97,8 @@ const AudioTester = () => {
         return buffer;
     };
 
-    const playTone = (channel) => {
-        stopTone();
+    const playTone = async (channel) => {
+        stopAll();
         const Ctx = window.AudioContext || window.webkitAudioContext;
         const ctx = new Ctx();
         audioCtxRef.current = ctx;
@@ -97,6 +119,15 @@ const AudioTester = () => {
         panner.connect(gain);
         gain.connect(ctx.destination);
 
+        // Set sink if supported
+        if (selectedSpeaker && gain.setSinkId) {
+            try {
+                await gain.setSinkId(selectedSpeaker);
+            } catch (err) {
+                console.warn("setSinkId not supported or failed:", err);
+            }
+        }
+
         startVisualizer(ctx, osc);
 
         osc.start();
@@ -105,8 +136,8 @@ const AudioTester = () => {
         setTestType('tone');
     };
 
-    const playPinkNoise = () => {
-        stopTone();
+    const playPinkNoise = async () => {
+        stopAll();
         const Ctx = window.AudioContext || window.webkitAudioContext;
         const ctx = new Ctx();
         audioCtxRef.current = ctx;
@@ -122,6 +153,15 @@ const AudioTester = () => {
         source.connect(gain);
         gain.connect(ctx.destination);
 
+        // Set sink if supported
+        if (selectedSpeaker && gain.setSinkId) {
+            try {
+                await gain.setSinkId(selectedSpeaker);
+            } catch (err) {
+                console.warn("setSinkId not supported or failed:", err);
+            }
+        }
+
         startVisualizer(ctx, source);
 
         source.start();
@@ -130,7 +170,56 @@ const AudioTester = () => {
         setTestType('pink');
     };
 
-    const stopTone = () => {
+    const playMusic = async (channel) => {
+        stopAll();
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new Ctx();
+        audioCtxRef.current = ctx;
+
+        try {
+            const response = await fetch('/audio/speaker-test.mpeg');
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.loop = true;
+
+            const gain = ctx.createGain();
+            const panner = ctx.createStereoPanner();
+
+            gain.gain.setValueAtTime(0.5, ctx.currentTime);
+
+            if (channel === 'left') panner.pan.value = -1;
+            else if (channel === 'right') panner.pan.value = 1;
+            else panner.pan.value = 0;
+
+            source.connect(panner);
+            panner.connect(gain);
+            gain.connect(ctx.destination);
+
+            // Set sink if supported
+            if (selectedSpeaker && gain.setSinkId) {
+                try {
+                    await gain.setSinkId(selectedSpeaker);
+                } catch (err) {
+                    console.warn("setSinkId not supported or failed:", err);
+                }
+            }
+
+            startVisualizer(ctx, source);
+
+            source.start();
+            audioFileRef.current = source;
+            setActiveChannel(channel);
+            setTestType('music');
+        } catch (err) {
+            console.error("Music Playback Error:", err);
+            alert("Failed to load audio file. Ensure speaker-test.mpeg is in public/audio/");
+        }
+    };
+
+    const stopAll = () => {
         if (oscRef.current) {
             try { oscRef.current.stop(); } catch (e) { }
             oscRef.current = null;
@@ -138,6 +227,10 @@ const AudioTester = () => {
         if (noiseRef.current) {
             try { noiseRef.current.stop(); } catch (e) { }
             noiseRef.current = null;
+        }
+        if (audioFileRef.current) {
+            try { audioFileRef.current.stop(); } catch (e) { }
+            audioFileRef.current = null;
         }
         if (audioCtxRef.current) {
             audioCtxRef.current.close();
@@ -152,13 +245,29 @@ const AudioTester = () => {
 
     return (
         <div className="container mx-auto p-6 max-w-4xl font-sans">
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <button
-                    onClick={() => { stopTone(); setActiveTool(null); }}
+                    onClick={() => { stopAll(); setActiveTool(null); }}
                     className="text-gray-400 hover:text-white flex items-center gap-2 font-bold uppercase text-xs tracking-widest transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4" /> BACK TO DASHBOARD
                 </button>
+
+                {/* Speaker Selector */}
+                {speakers.length > 0 && (
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[10px] text-gray-500 font-bold uppercase">Speaker Output</label>
+                        <select
+                            value={selectedSpeaker}
+                            onChange={(e) => setSelectedSpeaker(e.target.value)}
+                            className="bg-gray-900 border border-gray-800 text-gray-300 text-xs rounded p-2 focus:border-primary outline-none"
+                        >
+                            {speakers.map(d => (
+                                <option key={d.deviceId} value={d.deviceId}>{d.label || `Speaker ${d.deviceId.slice(0, 5)}`}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="bg-[#1e293b] rounded-2xl p-10 shadow-2xl border border-gray-800 relative overflow-hidden">
@@ -199,11 +308,11 @@ const AudioTester = () => {
                                         <button
                                             key={ch}
                                             onMouseDown={() => playTone(ch)}
-                                            onMouseUp={stopTone}
-                                            onMouseLeave={stopTone}
-                                            className={`py-6 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${activeChannel === ch
-                                                    ? 'bg-primary border-primary text-black scale-95 shadow-[0_0_20px_rgba(0,255,65,0.3)]'
-                                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'
+                                            onMouseUp={stopAll}
+                                            onMouseLeave={stopAll}
+                                            className={`py-6 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${activeChannel === ch && testType === 'tone'
+                                                ? 'bg-primary border-primary text-black scale-95 shadow-[0_0_20px_rgba(0,255,65,0.3)]'
+                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'
                                                 }`}
                                         >
                                             {ch === 'center' ? <Speaker className="h-6 w-6" /> : <Volume2 className={`h-6 w-6 ${ch === 'right' ? 'scale-x-[-1]' : ''}`} />}
@@ -218,18 +327,46 @@ const AudioTester = () => {
                     {/* Secondary Tests */}
                     <div className="w-full md:w-64 flex flex-col gap-4">
                         <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
-                            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest">Rattle Check</h3>
-                            <p className="text-xs text-gray-400 mb-6 leading-relaxed">Pink noise is ideal for identifying loose casing screws and membrane defects.</p>
+                            <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-widest flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-primary" /> Music Test
+                            </h3>
+                            <p className="text-[10px] text-gray-500 mb-4 leading-relaxed uppercase">Verify stereo imaging with reference audio.</p>
+
+                            <div className="flex flex-col gap-2">
+                                {['left', 'center', 'right'].map(ch => (
+                                    <button
+                                        key={ch}
+                                        onClick={() => playMusic(ch)}
+                                        className={`py-3 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all ${activeChannel === ch && testType === 'music'
+                                            ? 'bg-primary border-primary text-black'
+                                            : 'bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-500'
+                                            }`}
+                                    >
+                                        Music: {ch}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={stopAll}
+                                    className="mt-2 py-3 bg-red-900/20 border border-red-900/40 text-red-500 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-red-900/40"
+                                >
+                                    Stop Music
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                            <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-widest">Rattle Check</h3>
+                            <p className="text-[10px] text-gray-400 mb-4 leading-relaxed uppercase">Pink noise identifies casing defects.</p>
                             <button
                                 onMouseDown={playPinkNoise}
-                                onMouseUp={stopTone}
-                                onMouseLeave={stopTone}
-                                className={`w-full py-4 rounded-lg font-black text-xs uppercase tracking-[0.2em] transition-all ${testType === 'pink' && activeChannel === 'all'
-                                        ? 'bg-primary text-black shadow-[0_0_15px_rgba(0,255,65,0.3)]'
-                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                onMouseUp={stopAll}
+                                onMouseLeave={stopAll}
+                                className={`w-full py-3 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all ${testType === 'pink' && activeChannel === 'all'
+                                    ? 'bg-primary text-black'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                                     }`}
                             >
-                                Run Pink Noise
+                                Pink Noise
                             </button>
                         </div>
 

@@ -7,6 +7,35 @@ const InputTester = () => {
     const canvasRef = useRef(null);
     const [stats, setStats] = useState({ x: 0, y: 0, buttons: [], scroll: 0 });
     const [clicks, setClicks] = useState([]);
+    const [inputDevices, setInputDevices] = useState([]);
+
+    // Detect input devices
+    useEffect(() => {
+        const devices = [];
+
+        // Check for mouse
+        if (matchMedia('(pointer:fine)').matches) {
+            devices.push({ type: 'Mouse', icon: 'pointer', detected: true });
+        }
+
+        // Check for touchpad/touchscreen
+        if (matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window) {
+            devices.push({ type: 'Touch', icon: 'touch', detected: true });
+        }
+
+        // Check for keyboard
+        devices.push({ type: 'Keyboard', icon: 'keyboard', detected: true });
+
+        // Check for gamepad
+        if (navigator.getGamepads) {
+            const gamepads = navigator.getGamepads();
+            if (gamepads && Array.from(gamepads).some(g => g !== null)) {
+                devices.push({ type: 'Gamepad', icon: 'gamepad', detected: true });
+            }
+        }
+
+        setInputDevices(devices);
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -112,6 +141,20 @@ const InputTester = () => {
                     <RefreshCw className="h-4 w-4" /> Reset
                 </button>
             </div>
+
+            {/* Input Devices Panel */}
+            {inputDevices.length > 0 && (
+                <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-4">
+                    <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Detected Input Devices</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {inputDevices.map((device, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-primary/10 border border-primary/30 text-primary rounded text-xs font-mono">
+                                {device.type}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
                 {/* Canvas Area */}
