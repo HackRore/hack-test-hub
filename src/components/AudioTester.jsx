@@ -177,7 +177,7 @@ const AudioTester = () => {
         audioCtxRef.current = ctx;
 
         try {
-            const response = await fetch('/audio/speaker-test.mpeg');
+            const response = await fetch('/audio/speaker-test.mp3');
             const arrayBuffer = await response.arrayBuffer();
             const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
@@ -215,7 +215,7 @@ const AudioTester = () => {
             setTestType('music');
         } catch (err) {
             console.error("Music Playback Error:", err);
-            alert("Failed to load audio file. Ensure speaker-test.mpeg is in public/audio/");
+            alert("Failed to load audio file. Ensure speaker-test.mp3 is in public/audio/");
         }
     };
 
