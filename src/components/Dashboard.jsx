@@ -1,7 +1,8 @@
 import React from 'react';
 import useStore from '../store/useStore';
-import { Keyboard, Monitor, Camera, MousePointer, Volume2, HardDrive, Cpu, Activity, FileText, Globe, Wifi, Mic, Speaker, Battery } from 'lucide-react';
 import { generateReport } from '../utils/generateReport';
+import { motion as Motion } from 'framer-motion';
+import { Keyboard, Monitor, Camera, MousePointer, Volume2, HardDrive, Cpu, Activity, FileText, Globe, Wifi, Mic, Speaker, Battery, CheckCircle2 } from 'lucide-react';
 import BatteryMiniStatus from './BatteryMiniStatus';
 
 const deviceTests = [
@@ -23,8 +24,7 @@ const benchmarkTests = [
     { id: 'specs', title: 'System Specs', icon: Activity, desc: 'View detailed system information and environment.', btn: 'View Specs' },
 ];
 
-import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -70,7 +70,7 @@ const Dashboard = () => {
         const isCompleted = tool.qcId && qcResults[tool.qcId];
 
         return (
-            <motion.div
+            <Motion.div
                 key={tool.title}
                 variants={cardVariants}
                 whileHover={{ scale: 1.02, backgroundColor: '#253045' }}
@@ -95,12 +95,12 @@ const Dashboard = () => {
                 >
                     {tool.btn}
                 </button>
-            </motion.div>
+            </Motion.div>
         );
     };
 
     return (
-        <motion.div
+        <Motion.div
             initial="hidden"
             animate="visible"
             variants={containerVariants}
@@ -143,7 +143,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-        </motion.div>
+        </Motion.div>
     );
 };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import useStore from './store/useStore';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 import SystemSpecs from './components/SystemSpecs';
 import KeyboardTester from './components/KeyboardTester';
@@ -46,7 +46,7 @@ function App() {
       <Header />
       <main className="flex-1">
         <AnimatePresence mode="wait">
-          <motion.div
+          <Motion.div
             key={activeTool || 'dashboard'}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -54,7 +54,7 @@ function App() {
             transition={{ duration: 0.2 }}
           >
             {renderContent()}
-          </motion.div>
+          </Motion.div>
         </AnimatePresence>
       </main>
     </div>
