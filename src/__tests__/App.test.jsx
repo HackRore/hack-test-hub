@@ -13,7 +13,8 @@ beforeEach(() => {
 describe('App Integration', () => {
     test('renders Dashboard by default', () => {
         render(<App />);
-        expect(screen.getByText(/Device Diagnostics Dashboard/i)).toBeInTheDocument();
+        // Checking for HARDWARE SUITE which is a main heading on the Dashboard
+        expect(screen.getByText(/HARDWARE SUITE/i)).toBeInTheDocument();
     });
 
     test.skip('navigates to Specs module', () => {
@@ -33,6 +34,6 @@ describe('App Integration', () => {
         // Navigate Back
         fireEvent.click(screen.getByText(/BACK/i));
 
-        expect(screen.getByText(/Device Diagnostics Dashboard/i)).toBeInTheDocument();
+        expect(screen.getByText(/HARDWARE SUITE/i)).toBeInTheDocument();
     });
 });
