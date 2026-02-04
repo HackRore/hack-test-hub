@@ -14,7 +14,7 @@ import BatteryProBridge from './components/BatteryProBridge';
 import StorageBenchmark from './components/StorageBenchmark';
 import NetworkTest from './components/NetworkTest';
 import CpuTest from './components/CpuTest';
-import GpuTest from './components/GpuTest';
+import GPUTest from './components/GPUTest';
 import TouchTest from './components/TouchTest';
 import QCWizard from './components/QCWizard';
 
@@ -33,7 +33,7 @@ function App() {
       case 'storage': return <StorageBenchmark />;
       case 'network': return <NetworkTest />;
       case 'cpu': return <CpuTest />;
-      case 'gpu': return <GpuTest />;
+      case 'gpu': return <GPUTest />;
       case 'touch': return <TouchTest />;
       case 'qc': return <QCWizard />;
       case 'battery': return <BatteryProBridge />;
