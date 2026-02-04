@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useStore from '../store/useStore';
 import { Maximize, ArrowLeft } from 'lucide-react';
 
@@ -35,13 +35,13 @@ const DisplayCheck = () => {
         }
     };
 
-    const handleClick = () => {
+    const handleClick = useCallback(() => {
         if (isFullscreen) {
             setColorIndex((prev) => (prev + 1) % COLORS.length);
         }
-    };
+    }, [isFullscreen]);
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = useCallback((e) => {
         if (e.key === 'Escape' && isFullscreen) {
             setIsFullscreen(false);
         }
@@ -49,12 +49,12 @@ const DisplayCheck = () => {
             e.preventDefault();
             setColorIndex((prev) => (prev + 1) % COLORS.length);
         }
-    };
+    }, [isFullscreen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    });
+    }, [handleKeyDown]);
 
     useEffect(() => {
         const onChange = () => setIsFullscreen(!!document.fullscreenElement);
