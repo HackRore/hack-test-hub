@@ -36,10 +36,15 @@ const DisplayCheck = () => {
     };
 
     const handleClick = useCallback(() => {
+        console.log('Click detected! isFullscreen:', isFullscreen, 'colorIndex:', colorIndex);
         if (isFullscreen) {
-            setColorIndex((prev) => (prev + 1) % COLORS.length);
+            setColorIndex((prev) => {
+                const next = (prev + 1) % COLORS.length;
+                console.log('Changing color from', prev, 'to', next, COLORS[next]);
+                return next;
+            });
         }
-    }, [isFullscreen]);
+    }, [isFullscreen, colorIndex]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Escape' && isFullscreen) {
@@ -57,14 +62,19 @@ const DisplayCheck = () => {
     }, [handleKeyDown]);
 
     useEffect(() => {
-        const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+        const onChange = () => {
+            const newFullscreenState = !!document.fullscreenElement;
+            setIsFullscreen(newFullscreenState);
+            console.log("Fullscreen change event detected. isFullscreen:", newFullscreenState);
+        };
         document.addEventListener('fullscreenchange', onChange);
         return () => document.removeEventListener('fullscreenchange', onChange);
     }, []);
 
+
     return (
         <div
-            className={`w-full h-full flex flex-col items-center justify-center transition-colors duration-300 ${isFullscreen ? 'cursor-pointer' : ''}`}
+            className={`w-full h-full min-h-screen flex flex-col items-center justify-center transition-colors duration-300 ${isFullscreen ? 'cursor-pointer fixed inset-0 z-50' : ''}`}
             style={{ backgroundColor: isFullscreen ? COLORS[colorIndex] : '' }}
             onClick={handleClick}
         >
