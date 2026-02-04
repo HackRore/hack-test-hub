@@ -45,7 +45,8 @@ const DisplayCheck = () => {
         if (e.key === 'Escape' && isFullscreen) {
             setIsFullscreen(false);
         }
-        if (e.key === ' ' || e.key === 'ArrowRight') {
+        if (isFullscreen && (e.key === ' ' || e.key === 'ArrowRight')) {
+            e.preventDefault();
             setColorIndex((prev) => (prev + 1) % COLORS.length);
         }
     };
@@ -53,7 +54,7 @@ const DisplayCheck = () => {
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isFullscreen]);
+    });
 
     useEffect(() => {
         const onChange = () => setIsFullscreen(!!document.fullscreenElement);
