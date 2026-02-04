@@ -97,6 +97,50 @@ const QCWizard = () => {
         });
     };
 
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target.result;
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(content, 'text/html');
+                const tds = Array.from(doc.querySelectorAll('td'));
+
+                let design = null;
+                let full = null;
+                let cycles = null;
+
+                tds.forEach((td, idx) => {
+                    const text = (td.textContent || td.innerText || '').toUpperCase().trim();
+                    if (text === 'DESIGN CAPACITY' || text.includes('DESIGN CAPACITY')) {
+                        const val = tds[idx + 1]?.textContent.replace(/[^\d]/g, '');
+                        if (val && !design) design = Number(val);
+                    }
+                    if (text === 'FULL CHARGE CAPACITY' || text.includes('FULL CHARGE CAPACITY')) {
+                        const val = tds[idx + 1]?.textContent.replace(/[^\d]/g, '');
+                        if (val && !full) full = Number(val);
+                    }
+                    if (text === 'CYCLE COUNT' || text.includes('CYCLE COUNT')) {
+                        const val = tds[idx + 1]?.textContent.replace(/[^\d]/g, '');
+                        if (val && !cycles) cycles = Number(val);
+                    }
+                });
+
+                if (design && full) {
+                    handleBatteryUpdate('designCap', design);
+                    handleBatteryUpdate('fullCap', full);
+                    if (cycles) handleBatteryUpdate('cycleCount', cycles);
+                }
+            } catch (err) {
+                console.error("Parser failure", err);
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handlePass = (testName) => {
         setQCResult(currentStep.id, 'pass');
         setResults([...results, { test: testName, status: 'PASS' }]);
@@ -191,12 +235,18 @@ const QCWizard = () => {
                     <div className="bg-black/40 p-4 rounded-lg border border-gray-700 mb-8 relative z-10">
                         <div className="flex justify-between items-center mb-2">
                             <label className="text-xs font-bold text-gray-400 uppercase">Step 1: Run Command</label>
-                            <button onClick={copyCommand} className="text-xs text-primary hover:text-white underline">Copy</button>
+                            <div className="flex gap-4">
+                                <label className="text-xs text-primary hover:text-white underline cursor-pointer">
+                                    Upload Report
+                                    <input type="file" className="hidden" accept=".html" onChange={handleFileUpload} />
+                                </label>
+                                <button onClick={copyCommand} className="text-xs text-primary hover:text-white underline">Copy</button>
+                            </div>
                         </div>
                         <code className="block bg-black p-3 rounded text-green-400 font-mono text-sm select-all">
                             powercfg /batteryreport
                         </code>
-                        <p className="text-gray-500 text-xs mt-2">Open Report html to find values below.</p>
+                        <p className="text-gray-500 text-xs mt-2">Upload or find values manually below.</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
