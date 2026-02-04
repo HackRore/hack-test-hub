@@ -334,10 +334,12 @@ const KeyboardTester = () => {
                             <div className="text-gray-700 italic text-center mt-10">Waiting for input...</div>
                         )}
                         {eventLog.map((log) => (
-                            <div key={log.id} className="grid grid-cols-[1fr_auto] gap-2 border-b border-gray-900 pb-1 mb-1 last:border-0 hover:bg-gray-900/30">
+                            <div key={log.id} className={`grid grid-cols-[1fr_auto] gap-2 border-b border-gray-900 pb-1 mb-1 last:border-0 hover:bg-gray-900/30 ${log.isChatter ? 'bg-red-500/20' : ''}`}>
                                 <div>
                                     <span className="text-gray-500">[{log.time}]</span>{' '}
-                                    <span className="text-[#00ff41] font-bold">{log.code}</span>
+                                    <span className={`${log.isChatter ? 'text-red-500 animate-pulse' : 'text-[#00ff41]'} font-bold`}>
+                                        {log.code} {log.isChatter && `(!${log.delta}ms)`}
+                                    </span>
                                 </div>
                                 <div className="text-gray-600">{log.key}</div>
                             </div>

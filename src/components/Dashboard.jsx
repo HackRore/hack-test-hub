@@ -15,7 +15,8 @@ const deviceTests = [
 ];
 
 const benchmarkTests = [
-    { id: 'gpu', title: 'GPU Test', icon: Cpu, desc: 'Test the GPU using WebGL particle rendering.', btn: 'Start GPU Test' },
+    { id: 'cpu', title: 'CPU Stress', icon: Cpu, desc: 'Multi-threaded calculation stress test.', btn: 'Start CPU Test' },
+    { id: 'gpu', title: 'GPU Benchmark', icon: Activity, desc: 'WebGL particle rendering benchmark.', btn: 'Start GPU Test' },
     { id: 'storage', title: 'Storage Test', icon: HardDrive, desc: 'Test read/write speeds to benchmark local storage.', btn: 'Start Storage Test' },
     { id: 'battery', title: 'Battery Health', icon: Battery, desc: 'Deep analysis via powercfg report automation.', btn: 'Check Health', qcId: 'battery' },
     { id: 'qc', title: 'QC Wizard', icon: Activity, desc: 'Guided Quality Control workflow with certification.', btn: 'Start QC Mode' },

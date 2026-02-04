@@ -24,6 +24,22 @@ const useStore = create((set) => ({
     soundEnabled: true,
     toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
 
+    // Storage Metadata Persistence (Manual Tech Input)
+    // Persisted to localStorage to ensure machine-specific data survives refreshes
+    storageMetadata: JSON.parse(localStorage.getItem('hackrore_storage_meta')) || {
+        brand: '',
+        busType: 'NVMe',
+        healthPercent: 100,
+        observedCapacity: '',
+        peakActiveTime: 0,
+        avgResponseTime: 0,
+    },
+    setStorageMetadata: (metadata) => set((state) => {
+        const newData = { ...state.storageMetadata, ...metadata };
+        localStorage.setItem('hackrore_storage_meta', JSON.stringify(newData));
+        return { storageMetadata: newData };
+    }),
+
     // QC Wizard State
     qcResults: {}, // { testId: 'pass' | 'fail' | null }
     setQCResult: (id, status) => set((state) => ({
