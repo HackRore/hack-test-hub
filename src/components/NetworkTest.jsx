@@ -9,6 +9,7 @@ const NetworkTest = () => {
     const [latencyHistory, setLatencyHistory] = useState([]);
     const [isPinging, setIsPinging] = useState(false);
     const [lastPing, setLastPing] = useState(null);
+    const [jitter, setJitter] = useState(0); // Explicit state for jitter
 
     // Get Network API Info
     const updateNetworkInfo = () => {
@@ -25,8 +26,11 @@ const NetworkTest = () => {
     };
 
     useEffect(() => {
-        window.addEventListener('online', () => setStatus('ONLINE'));
-        window.addEventListener('offline', () => setStatus('OFFLINE'));
+        const handleOnline = () => setStatus('ONLINE');
+        const handleOffline = () => setStatus('OFFLINE');
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
 
         const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         if (conn) {
@@ -35,8 +39,8 @@ const NetworkTest = () => {
         }
 
         return () => {
-            window.removeEventListener('online', () => setStatus('ONLINE'));
-            window.removeEventListener('offline', () => setStatus('OFFLINE'));
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
             if (conn) conn.removeEventListener('change', updateNetworkInfo);
         };
     }, []);
@@ -107,7 +111,7 @@ const NetworkTest = () => {
                         <span className={`text-4xl font-bold font-mono ${status === 'ONLINE' ? 'text-green-500' : 'text-red-500'}`}>{status}</span>
                     </div>
                     <p className="font-mono text-gray-400 text-sm">
-                        {networkInfo.effectiveType?.toUpperCase()} CONNECTION DETECTED
+                        {networkInfo.type?.toUpperCase() || 'UNKNOWN'} NETWORK ({networkInfo.effectiveType?.toUpperCase() || 'UNKNOWN'})
                     </p>
                 </div>
 
@@ -117,7 +121,11 @@ const NetworkTest = () => {
                         <h3 className="text-gray-400 font-mono text-sm mb-4 border-b border-gray-700 pb-2">CONNECTION DETAILS</h3>
                         <div className="space-y-4 font-mono">
                             <div className="flex justify-between">
-                                <span className="text-gray-500">Connection Tech</span>
+                                <span className="text-gray-500">Network Type</span>
+                                <span className="text-primary">{networkInfo.type || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Effective Type</span>
                                 <span className="text-primary">{networkInfo.effectiveType || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
@@ -184,14 +192,16 @@ const NetworkTest = () => {
                 <div className="mt-6 bg-gray-800 p-4 rounded-lg h-[100px] flex items-end gap-1 relative overflow-hidden">
                     <div className="absolute top-2 right-2 text-xs text-gray-500 font-mono">LATENCY HISTORY (LAST 20)</div>
                     {latencyHistory.map((val, idx) => {
-                        const height = val === -1 ? 100 : Math.min(val, 200) / 2; // Cap visual at 200ms
                         const isDrop = val === -1;
+                        // Drops (-1) are red and capped at 10% height to differentiate from high latency
+                        const height = isDrop ? 10 : Math.min(val, 200) / 2; // Cap visual at 200ms = 100%
+
                         return (
                             <div
                                 key={idx}
                                 style={{ height: `${height}%`, width: '5%' }}
-                                className={`rounded-t ${isDrop ? 'bg-red-500' : val < 50 ? 'bg-green-500' : val < 100 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                                title={isDrop ? 'Timeout' : `${val}ms`}
+                                className={`rounded-t transition-all ${isDrop ? 'bg-red-500/80' : val < 50 ? 'bg-green-500' : val < 100 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                title={isDrop ? 'Packet Drop (Timeout)' : `${val}ms`}
                             />
                         );
                     })}
