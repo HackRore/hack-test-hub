@@ -6,25 +6,31 @@ export const generateReport = (specs, storageResults, batteryStatus, extraData =
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
 
-    // -- HEADER --
+    // -- ELITE HEADER --
+    const modelName = extraData.systemIdentity?.modelName || 'PENDING_MODEL';
+    const serialNum = extraData.systemIdentity?.serialNumber || 'PENDING_SCAN';
+
     doc.setFillColor(10, 10, 10); // #0a0a0a
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, pageWidth, 50, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(28);
+    doc.text(modelName.toUpperCase(), 14, 18);
 
     doc.setTextColor(0, 255, 65); // Electric Green
-    doc.setFont('courier', 'bold');
-    doc.setFontSize(22);
-    doc.text('HACKRORE DIAGNOSTICS', 14, 20);
-
-    doc.setTextColor(200, 200, 200);
-    doc.setFontSize(10);
-    doc.text('CERTIFIED TECHNICIAN REPORT', 14, 30);
+    doc.setFontSize(18);
+    doc.text(`SN: ${serialNum}`, 14, 30);
 
     doc.setTextColor(150, 150, 150);
-    doc.text(`COMPLETION: ${new Date().toLocaleString()}`, pageWidth - 14, 20, { align: 'right' });
-    doc.text(`SN: ${serial}`, pageWidth - 14, 30, { align: 'right' });
-    doc.text(`Tech: ${technician}`, pageWidth - 14, 40, { align: 'right' });
+    doc.setFontSize(9);
+    doc.setFont('courier', 'normal');
+    doc.text(`DIAGNOSTIC_SUITE: HACKRORE.PRO_v2.5`, 14, 42);
+    doc.text(`TIMESTAMP: ${new Date().toLocaleString()}`, pageWidth - 14, 18, { align: 'right' });
+    doc.text(`TECHNICIAN: ${technician.toUpperCase()}`, pageWidth - 14, 30, { align: 'right' });
+    doc.text(`NODE_ID: ${serialNum.slice(-4) || 'NULL'}`, pageWidth - 14, 42, { align: 'right' });
 
-    let yPos = 55;
+    let yPos = 65;
 
     // -- QC CHECKLIST (If Available) --
     if (qcResults) {
@@ -53,6 +59,11 @@ export const generateReport = (specs, storageResults, batteryStatus, extraData =
 
     const specData = [
         ['Platform', specs?.platform || 'Unknown'],
+        ['Device Model', extraData.systemIdentity?.modelName || 'Unknown'],
+        ['Serial Number', extraData.systemIdentity?.serialNumber || 'Unknown'],
+        ['Processor', extraData.systemIdentity?.processor || 'Standard'],
+        ['RAM Frequency', extraData.systemIdentity?.ramFrequency || 'Standard'],
+        ['GPU Details', extraData.systemIdentity?.gpuDetails || 'Integrated'],
         ['Browser Engine', specs?.userAgent || 'Unknown'],
         ['Logical Cores', `${specs?.cores || '?'} Threads`],
         ['Screen Resolution', `${specs?.screen?.width}x${specs?.screen?.height}`],
