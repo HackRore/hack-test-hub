@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useStore from '../store/useStore';
 import { Maximize, ArrowLeft } from 'lucide-react';
 
-const COLORS = ['#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF'];
-const LABELS = ['Pure Black', 'Pure White', 'Red', 'Green', 'Blue'];
+const COLORS = ['#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#00FFFF', '#FF00FF', '#FFFF00'];
+const LABELS = ['Pure Black', 'Pure White', 'Red', 'Green', 'Blue', 'Cyan', 'Magenta', 'Yellow'];
 
 const DisplayCheck = () => {
     const { setActiveTool } = useStore();
     const [colorIndex, setColorIndex] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [displayInfo, setDisplayInfo] = useState(null);
+    const [cursorVisible, setCursorVisible] = useState(true);
+    const cursorTimeout = useRef(null);
 
     useEffect(() => {
         // Gather display information
@@ -71,10 +73,34 @@ const DisplayCheck = () => {
         return () => document.removeEventListener('fullscreenchange', onChange);
     }, []);
 
+    useEffect(() => {
+        if (!isFullscreen) {
+            setCursorVisible(true);
+            return;
+        }
+
+        const onMouseMove = () => {
+            setCursorVisible(true);
+            if (cursorTimeout.current) clearTimeout(cursorTimeout.current);
+            cursorTimeout.current = setTimeout(() => {
+                setCursorVisible(false);
+            }, 2000);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        // Initial timeout to hide cursor if no movement
+        cursorTimeout.current = setTimeout(() => setCursorVisible(false), 2000);
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            if (cursorTimeout.current) clearTimeout(cursorTimeout.current);
+        };
+    }, [isFullscreen]);
+
 
     return (
         <div
-            className={`w-full h-full min-h-screen flex flex-col items-center justify-center transition-colors duration-300 ${isFullscreen ? 'cursor-pointer fixed inset-0 z-50' : ''}`}
+            className={`w-full h-full min-h-screen flex flex-col items-center justify-center transition-colors duration-300 ${isFullscreen ? 'fixed inset-0 z-50' : ''} ${isFullscreen && !cursorVisible ? 'cursor-none' : 'cursor-default'}`}
             style={{ backgroundColor: isFullscreen ? COLORS[colorIndex] : '' }}
             onClick={handleClick}
         >
