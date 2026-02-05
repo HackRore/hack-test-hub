@@ -60,7 +60,7 @@ const Header = () => {
                 <nav className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-gray-400">
                     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${isAdvancedView ? 'bg-black border-primary/20 mr-4' : 'bg-white/5 border-white/5 mr-4'}`}>
                         <CreditCard className="h-3 w-3 text-yellow-500" />
-                        <span className="text-white font-black">{credits}</span>
+                        <span className="text-white font-black">₹{credits}</span>
                     </div>
                     <button onClick={() => setActiveTool(null)} className="hover:text-primary transition-colors">Workspace</button>
                     <button onClick={() => setActiveTool('resources')} className="hover:text-primary transition-colors">Library</button>

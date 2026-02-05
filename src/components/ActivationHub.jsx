@@ -13,30 +13,41 @@ const ACTIVATION_PLANS = [
         id: 'kms-180',
         title: 'Standard Activation',
         subtitle: 'KMS Renew (180 Days)',
-        desc: 'Standard enterprise licensing. Auto-renews every 180 days. Ideal for bulk system setups.',
+        desc: 'Standard enterprise licensing. Auto-renews every 180 days. Ideal for quick system turnarounds.',
         cost: 50,
         type: 'KMS',
         icon: Zap,
         cmd: 'irm https://get.activated.win | iex',
-        args: '1' // MAS option for KMS
+        args: '1'
+    },
+    {
+        id: 'kms-365',
+        title: 'Advanced Licensing',
+        subtitle: 'KMS Extended (1 Year)',
+        desc: 'Long-term enterprise sync. Stable for 365 days before renewal trigger. Best value for business units.',
+        cost: 90,
+        type: 'KMS_EXT',
+        icon: Terminal,
+        cmd: 'irm https://get.activated.win | iex',
+        args: '1'
     },
     {
         id: 'hwid-perm',
         title: 'Premium HWID',
         subtitle: 'Permanent Hardware ID',
-        desc: 'Binds a genuine digital license to the motherboard. Survives OS reinstalls. Recommended for personal tech.',
-        cost: 150,
+        desc: 'Binds a lifetime digital license to the motherboard. Never expires. Survives OS reinstalls.',
+        cost: 250,
         type: 'PERMANENT',
         icon: ShieldCheck,
         cmd: 'irm https://get.activated.win | iex',
-        args: '1' // MAS option for HWID
+        args: '1'
     },
     {
         id: 'office-ohook',
         title: 'Office Suite Pro',
         subtitle: 'Ohook Global Licensing',
-        desc: 'Permanent office activation bypassing local licensing calls. Works for all modern VL suites.',
-        cost: 100,
+        desc: 'Permanent office activation bypassing local licensing calls. Lifetime stability for VL suites.',
+        cost: 150,
         type: 'OFFICE',
         icon: Key,
         cmd: 'irm https://get.activated.win | iex',
@@ -114,8 +125,8 @@ const ActivationHub = () => {
                         <CreditCard className="h-5 w-5 text-yellow-500" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Service Credits</p>
-                        <p className="text-xl font-black text-white leading-none">{credits}</p>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Provisioning Balance</p>
+                        <p className="text-xl font-black text-white leading-none">₹{credits}</p>
                     </div>
                 </div>
             </div>
@@ -150,8 +161,8 @@ const ActivationHub = () => {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-6 pt-6 border-t border-white/5">
-                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Req. Credits</span>
-                                            <span className="text-lg font-black text-white">{plan.cost}</span>
+                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Plan Cost</span>
+                                            <span className="text-lg font-black text-white">₹{plan.cost}</span>
                                         </div>
                                         <Motion.button
                                             onClick={() => handleActivate(plan)}
@@ -159,8 +170,8 @@ const ActivationHub = () => {
                                             whileHover={credits >= plan.cost ? { scale: 1.02 } : {}}
                                             whileTap={credits >= plan.cost ? { scale: 0.98 } : {}}
                                             className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-[10px] tracking-widest uppercase transition-all ${credits >= plan.cost
-                                                    ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                                                    : 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50'
+                                                ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                                                : 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50'
                                                 }`}
                                         >
                                             {credits >= plan.cost ? 'Initiate Activation' : 'Insufficient Credits'}
