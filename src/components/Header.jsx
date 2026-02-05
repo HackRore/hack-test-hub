@@ -1,3 +1,4 @@
+import React from 'react';
 import { Shield, Home, CreditCard } from 'lucide-react';
 import useStore from '../store/useStore';
 
