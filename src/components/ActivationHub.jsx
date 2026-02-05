@@ -56,7 +56,7 @@ const ACTIVATION_PLANS = [
 ];
 
 const MERCHANT_CONFIG = {
-    upi_id: 'hackrore@upi',
+    upi_id: '9322026193@superyes',
     merchant_name: 'HACKRORE_GLOBAL_SYSTEMS',
     node_server: 'BAN-NY-01 (Verified)'
 };
