@@ -23,7 +23,7 @@ import ActivationHub from './components/ActivationHub';
 
 
 function App() {
-  const { activeTool, hasBooted } = useStore();
+  const { activeTool, hasBooted, isAdvancedView } = useStore();
   const [isBooting, setIsBooting] = useState(!hasBooted);
 
   // Skip boot if we've already done it once in the past
