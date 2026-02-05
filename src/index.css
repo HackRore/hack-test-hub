@@ -22,7 +22,12 @@
 }
 
 body {
-  @apply text-gray-200 font-sans overflow-x-hidden;
+  @apply text-gray-200 font-sans overflow-x-hidden m-0 p-0;
+  background-color: #0f172a;
+  /* Default fallback */
+}
+
+div.min-h-screen {
   background-color: var(--bg-color);
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
@@ -33,7 +38,7 @@ body {
   transition: background-color 0.5s ease-in-out;
 }
 
-.advanced-mode body {
+div.advanced-mode {
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),

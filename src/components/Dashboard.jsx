@@ -6,7 +6,7 @@ import {
     Keyboard, Monitor, Camera, MousePointer, Volume2,
     HardDrive, Cpu, Activity, FileText, Globe,
     Wifi, Mic, Speaker, Battery, CheckCircle2,
-    Package, Shield, Terminal, Zap, Info, Settings2, X
+    Package, Shield, ShieldCheck, Terminal, Zap, Info, Settings2, X
 } from 'lucide-react';
 import BatteryMiniStatus from './BatteryMiniStatus';
 import TacticalFrame from './TacticalFrame';
