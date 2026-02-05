@@ -363,7 +363,8 @@ const ActivationHub = () => {
                                     </div>
                                 </div>
 
-                                <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-[0.3em]">System Provisioning</h2>
+                                <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-[0.3em]">Processing Payment</h2>
+                                <p className="text-sm text-yellow-500 font-bold uppercase tracking-widest mb-8 animate-pulse">⚠️ Do Not Close This Tab</p>
                                 <div className="w-full bg-gray-900 border border-white/5 rounded-2xl p-6 font-mono text-[10px] text-primary/80 space-y-2 text-left shadow-2xl">
                                     {[
                                         "Authenticating transaction signature...",
