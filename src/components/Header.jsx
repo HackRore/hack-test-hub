@@ -1,9 +1,8 @@
-import React from 'react';
-import { Shield, Home } from 'lucide-react';
+import { Shield, Home, CreditCard } from 'lucide-react';
 import useStore from '../store/useStore';
 
 const Header = () => {
-    const { setActiveTool, isAdvancedView } = useStore();
+    const { setActiveTool, isAdvancedView, credits } = useStore();
     const [pulse, setPulse] = React.useState(0);
 
     React.useEffect(() => {
