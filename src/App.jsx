@@ -58,7 +58,9 @@ function App() {
         {isBooting && <BootScreen onComplete={() => setIsBooting(false)} />}
       </AnimatePresence>
 
-      <div className={`min-h-screen bg-transparent text-gray-100 font-sans selection:bg-primary selection:text-black transition-opacity duration-1000 ${isBooting ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`min-h-screen text-gray-100 font-sans selection:bg-primary selection:text-black transition-all duration-1000 ${isBooting ? 'opacity-0' : 'opacity-100'} ${isAdvancedView ? 'advanced-mode' : ''}`}
+        style={{ backgroundColor: 'var(--bg-color)' }}
+      >
         {!isBooting && (
           <>
             <Header />

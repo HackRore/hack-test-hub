@@ -80,23 +80,23 @@ const Dashboard = () => {
                 className="h-full"
             >
                 <TacticalFrame className="h-full">
-                    <div className={`flex flex-col items-center justify-between p-8 rounded-[inherit] text-center h-full transition-all group/card ${isAdvancedView ? 'bg-gray-950/40 backdrop-blur-md' : 'bg-white/5 hover:bg-white/10'}`}>
+                    <div className={`flex flex-col items-center justify-between p-8 rounded-[inherit] text-center h-full transition-all group/card ${isAdvancedView ? 'bg-black/80 backdrop-blur-xl border border-primary/10' : 'bg-white/5 hover:bg-white/10'}`}>
                         {isCompleted && (
-                            <div className="absolute top-4 right-4">
+                            <div className="absolute top-4 right-4 focus-visible:outline-none">
                                 <CheckCircle2 className="h-5 w-5 text-primary" />
                             </div>
                         )}
 
                         <div className="flex flex-col items-center gap-6">
-                            <div className={`p-4 rounded-2xl transition-colors relative ${isAdvancedView ? 'bg-black/40 border border-gray-800 group-hover/card:border-primary/50' : 'bg-primary/5'}`}>
-                                <tool.icon className={`h-8 w-8 transition-colors ${isAdvancedView ? 'text-gray-400 group-hover/card:text-primary' : 'text-primary'}`} />
-                                {isAdvancedView && <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover/card:opacity-100 transition-opacity" />}
+                            <div className={`p-4 rounded-2xl transition-all duration-500 relative ${isAdvancedView ? 'bg-black border border-primary/20 shadow-[0_0_20px_rgba(0,255,65,0.1)] group-hover/card:border-primary group-hover/card:shadow-[0_0_40px_rgba(0,255,65,0.3)]' : 'bg-primary/5'}`}>
+                                <tool.icon className={`h-8 w-8 transition-colors ${isAdvancedView ? 'text-primary' : 'text-primary'}`} />
+                                {isAdvancedView && <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover/card:opacity-100 transition-opacity" />}
                             </div>
                             <div>
-                                <h3 className={`text-base font-bold text-white mb-2 ${isAdvancedView ? 'tracking-[0.2em] font-black uppercase' : ''}`}>
+                                <h3 className={`text-base font-bold text-white mb-2 transition-all ${isAdvancedView ? 'tracking-[0.4em] font-black uppercase font-mono' : ''}`}>
                                     {isAdvancedView ? tool.title.toUpperCase().replace(' ', '_') : tool.title}
                                 </h3>
-                                <p className={`text-xs text-gray-400 font-medium leading-relaxed px-2 ${isAdvancedView ? 'text-[9px] uppercase tracking-wider' : ''}`}>
+                                <p className={`text-xs text-gray-400 font-medium leading-relaxed px-2 transition-all ${isAdvancedView ? 'text-[9px] uppercase tracking-[0.2em] font-mono text-primary/60' : ''}`}>
                                     {tool.desc}
                                 </p>
                             </div>
@@ -107,8 +107,8 @@ const Dashboard = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             className={`mt-8 px-6 py-3 font-bold text-xs rounded-xl transition-all w-full ${isAdvancedView
-                                    ? 'bg-gray-900 border border-gray-800 text-primary hover:bg-primary hover:text-black tracking-[0.2em] uppercase text-[10px]'
-                                    : 'bg-primary text-black shadow-lg shadow-primary/10 hover:shadow-primary/20'
+                                ? 'bg-gray-900 border border-gray-800 text-primary hover:bg-primary hover:text-black tracking-[0.2em] uppercase text-[10px]'
+                                : 'bg-primary text-black shadow-lg shadow-primary/10 hover:shadow-primary/20'
                                 }`}
                         >
                             {isAdvancedView ? `INIT_${tool.btn.toUpperCase()}` : tool.btn}
