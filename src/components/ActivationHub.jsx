@@ -56,32 +56,37 @@ const ACTIVATION_PLANS = [
 ];
 
 const ActivationHub = () => {
-    const { setActiveTool, isAdvancedView, credits, deductCredits } = useStore();
+    const { setActiveTool, isAdvancedView, credits, addCredits } = useStore();
     const [selectedPlan, setSelectedPlan] = useState(null);
+    const [isPaying, setIsPaying] = useState(false);
     const [isProvisioning, setIsProvisioning] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const [provisioningStep, setProvisioningStep] = useState(0);
+    const [utr, setUtr] = useState('');
 
-    const handleActivate = async (plan) => {
-        if (credits < plan.cost) return;
-
+    const handleInitiate = (plan) => {
         setSelectedPlan(plan);
+        setIsPaying(true);
+        setUtr('');
+    };
+
+    const handleConfirmPayment = async () => {
+        setIsPaying(false);
         setIsProvisioning(true);
         setProvisioningStep(0);
 
         // Simulation sequence
         const steps = [
-            "Initializing secure handshake...",
+            "Authenticating transaction signature...",
             "Validating system manifest...",
-            "Deducting service credits...",
-            "Encrypting licensing token...",
-            "Ready for terminal execution."
+            "Decrypting one-click payload...",
+            "Routing to local terminal bridge...",
+            "Ready for system bonding."
         ];
 
         for (let i = 0; i < steps.length; i++) {
             setProvisioningStep(i);
-            await new Promise(r => setTimeout(r, 800));
-            if (i === 2) deductCredits(plan.cost);
+            await new Promise(r => setTimeout(r, 1000));
         }
 
         setIsProvisioning(false);
@@ -91,11 +96,11 @@ const ActivationHub = () => {
     const handleCopy = () => {
         if (!selectedPlan) return;
         navigator.clipboard.writeText(selectedPlan.cmd);
-        // We could add a toast here
     };
 
     const reset = () => {
         setIsCompleted(false);
+        setIsPaying(false);
         setSelectedPlan(null);
         setProvisioningStep(0);
     };
@@ -132,13 +137,98 @@ const ActivationHub = () => {
             </div>
 
             <AnimatePresence mode="wait">
-                {!isCompleted && !isProvisioning ? (
+                {isPaying ? (
+                    <Motion.div
+                        key="payment"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="max-w-4xl mx-auto"
+                    >
+                        <TacticalFrame>
+                            <div className="bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[inherit] overflow-hidden">
+                                <div className="grid grid-cols-1 md:grid-cols-2">
+                                    {/* Left: QR Side */}
+                                    <div className="p-12 border-r border-white/5 flex flex-col items-center justify-center text-center bg-white/5">
+                                        <div className="relative p-4 bg-white rounded-2xl mb-8 group cursor-crosshair">
+                                            <img
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hackrore@upi&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
+                                                alt="Payment QR"
+                                                className="w-48 h-48"
+                                            />
+                                            <div className="absolute inset-0 border-2 border-primary/20 group-hover:border-primary transition-colors pointer-events-none rounded-2xl" />
+                                        </div>
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Scan with UPI App</p>
+                                        <div className="flex items-center gap-2 text-white font-mono text-lg">
+                                            <span className="text-gray-500 font-sans tracking-tight">Amount:</span>
+                                            <span>₹{selectedPlan.cost}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Info Side */}
+                                    <div className="p-12 flex flex-col justify-between">
+                                        <div>
+                                            <div className="mb-8 p-6 bg-black border border-white/5 rounded-2xl">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 block">Transaction Ref (UTR)</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="XXXX-XXXX-XXXX"
+                                                    value={utr}
+                                                    onChange={(e) => setUtr(e.target.value)}
+                                                    className="w-full bg-transparent border-b border-white/10 py-2 outline-none text-primary font-mono text-sm focus:border-primary transition-colors"
+                                                />
+                                            </div>
+                                            <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-tight">Security Protocol</h2>
+                                            <div className="space-y-6">
+                                                <div className="flex gap-4">
+                                                    <div className="p-2 bg-primary/10 rounded-lg h-fit">
+                                                        <ShieldCheck className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Encrypted Gateway</p>
+                                                        <p className="text-[11px] text-gray-500 font-medium">Your transaction signature is validated against the licensing node.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <div className="p-2 bg-blue-500/10 rounded-lg h-fit">
+                                                        <Check className="h-4 w-4 text-blue-500" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Post-Auth Logic</p>
+                                                        <p className="text-[11px] text-gray-500 font-medium">Activation executes immediately upon transaction confirmation.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-12 space-y-4">
+                                            <Motion.button
+                                                onClick={handleConfirmPayment}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className="w-full bg-primary text-black py-5 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase shadow-lg shadow-primary/20"
+                                            >
+                                                Confirm & Finalize
+                                            </Motion.button>
+                                            <button
+                                                onClick={() => setIsPaying(false)}
+                                                className="w-full text-gray-500 hover:text-white py-2 text-[10px] font-black tracking-widest uppercase transition-colors"
+                                            >
+                                                Abort Transaction
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </TacticalFrame>
+                    </Motion.div>
+                ) : !isCompleted && !isProvisioning ? (
                     <Motion.div
                         key="selection"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                     >
                         {ACTIVATION_PLANS.map((plan) => (
                             <TacticalFrame key={plan.id}>
@@ -154,8 +244,8 @@ const ActivationHub = () => {
                                                 </span>
                                             </div>
                                         </div>
-                                        <h3 className={`text-xl font-bold text-white mb-1 ${isAdvancedView ? 'font-mono' : ''}`}>{plan.title}</h3>
-                                        <p className="text-xs font-bold text-gray-500 mb-6 uppercase tracking-wider">{plan.subtitle}</p>
+                                        <h3 className={`text-lg font-bold text-white mb-1 ${isAdvancedView ? 'font-mono uppercase tracking-tight' : ''}`}>{plan.title}</h3>
+                                        <p className="text-[10px] font-bold text-gray-500 mb-6 uppercase tracking-wider">{plan.subtitle}</p>
                                         <p className="text-xs text-gray-400 leading-relaxed mb-8">{plan.desc}</p>
                                     </div>
 
@@ -165,16 +255,12 @@ const ActivationHub = () => {
                                             <span className="text-lg font-black text-white">₹{plan.cost}</span>
                                         </div>
                                         <Motion.button
-                                            onClick={() => handleActivate(plan)}
-                                            disabled={credits < plan.cost}
-                                            whileHover={credits >= plan.cost ? { scale: 1.02 } : {}}
-                                            whileTap={credits >= plan.cost ? { scale: 0.98 } : {}}
-                                            className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-[10px] tracking-widest uppercase transition-all ${credits >= plan.cost
-                                                ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                                                : 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50'
-                                                }`}
+                                            onClick={() => handleInitiate(plan)}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="w-full bg-primary text-black py-4 rounded-xl flex items-center justify-center gap-3 font-black text-[10px] tracking-widest uppercase transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40"
                                         >
-                                            {credits >= plan.cost ? 'Initiate Activation' : 'Insufficient Credits'}
+                                            Initiate Flow
                                         </Motion.button>
                                     </div>
                                 </div>
@@ -202,11 +288,11 @@ const ActivationHub = () => {
                         <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-[0.3em]">System Provisioning</h2>
                         <div className="w-full bg-gray-900 border border-white/5 rounded-2xl p-6 font-mono text-[10px] text-primary/80 space-y-2 text-left shadow-2xl">
                             {[
-                                "Initializing secure handshake...",
+                                "Authenticating transaction signature...",
                                 "Validating system manifest...",
-                                "Deducting service credits...",
-                                "Encrypting licensing token...",
-                                "Ready for terminal execution."
+                                "Decrypting one-click payload...",
+                                "Routing to local terminal bridge...",
+                                "Ready for system bonding."
                             ].map((step, i) => (
                                 <div key={i} className={`flex items-center gap-3 transition-opacity duration-300 ${i <= provisioningStep ? 'opacity-100' : 'opacity-20'}`}>
                                     {i < provisioningStep ? <Check className="h-3 w-3 text-primary" /> : <div className="w-3 h-3 border border-primary/40 rounded-full" />}
@@ -220,48 +306,61 @@ const ActivationHub = () => {
                         key="completed"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="max-w-3xl mx-auto"
+                        className="max-w-4xl mx-auto"
                     >
                         <TacticalFrame>
-                            <div className="bg-black/60 backdrop-blur-3xl border border-primary/20 rounded-[inherit] p-12 text-center relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8">
-                                    <div className="w-24 h-24 bg-primary/5 rounded-full blur-3xl" />
-                                </div>
-
-                                <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-primary/20">
-                                    <Check className="h-10 w-10 text-primary" />
-                                </div>
-
-                                <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Provisioning Successful</h2>
-                                <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest mb-12">Action required: Terminal Finalization</p>
-
-                                <div className="bg-black border border-white/10 rounded-2xl p-8 text-left mb-12">
-                                    <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
-                                        <Terminal className="h-4 w-4 text-primary" />
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Secure Licensing Token</span>
+                            <div className="bg-black/60 backdrop-blur-3xl border border-primary/20 rounded-[inherit] p-12 relative overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                    {/* Final Command */}
+                                    <div className="bg-black border border-white/10 rounded-2xl p-8 text-left">
+                                        <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
+                                            <Terminal className="h-4 w-4 text-primary" />
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Master Activation Token</span>
+                                        </div>
+                                        <code className="text-primary font-mono text-sm break-all block mb-6 leading-loose opacity-80 select-all p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                            {selectedPlan.cmd}
+                                        </code>
+                                        <Motion.button
+                                            onClick={handleCopy}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="w-full bg-white/5 border border-white/10 py-4 rounded-xl flex items-center justify-center gap-3 font-black text-[10px] tracking-widest uppercase hover:bg-white/10 transition-all text-white"
+                                        >
+                                            <Copy className="h-4 w-4" /> Copy Master Token
+                                        </Motion.button>
+                                        <div className="mt-8 p-4 bg-yellow-500/5 border border-yellow-500/10 rounded-xl">
+                                            <p className="text-[9px] text-yellow-500/80 font-bold uppercase tracking-widest leading-loose text-center italic">
+                                                * Paste into PowerShell (Admin) for final bonding.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <code className="text-primary font-mono text-sm break-all block mb-6 leading-loose opacity-80 select-all">
-                                        {selectedPlan.cmd}
-                                    </code>
-                                    <p className="text-[10px] text-gray-600 font-medium italic mb-8">
-                                        * Paste this command into Windows PowerShell (Admin) and follow the on-screen prompts.
-                                    </p>
-                                    <Motion.button
-                                        onClick={handleCopy}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="w-full bg-white/5 border border-white/10 py-4 rounded-xl flex items-center justify-center gap-3 font-black text-[10px] tracking-widest uppercase hover:bg-white/10 transition-all text-white"
-                                    >
-                                        <Copy className="h-4 w-4" /> Copy Access Token
-                                    </Motion.button>
-                                </div>
 
-                                <button
-                                    onClick={reset}
-                                    className="text-gray-500 hover:text-white font-black text-[10px] tracking-widest uppercase transition-colors"
-                                >
-                                    Return to Selection
-                                </button>
+                                    {/* Verification Checklist */}
+                                    <div>
+                                        <h3 className="text-xl font-black text-white mb-6 uppercase tracking-tight">Post-Auth Validation</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5">
+                                                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">1</div>
+                                                <p className="text-xs text-white font-medium">Open **Microsoft Word** to verify license load.</p>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5">
+                                                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">2</div>
+                                                <p className="text-xs text-white font-medium">Navigate to **File &gt; Account**.</p>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5">
+                                                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">3</div>
+                                                <p className="text-xs text-white font-medium">Verify "Product Activated" status badge.</p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={reset}
+                                            className="mt-12 text-gray-500 hover:text-white font-black text-[10px] tracking-widest uppercase transition-colors flex items-center gap-2"
+                                        >
+                                            <ArrowLeft className="h-4 w-4" /> Return to Terminal
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </TacticalFrame>
                     </Motion.div>
