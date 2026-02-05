@@ -56,7 +56,8 @@ const ACTIVATION_PLANS = [
 ];
 
 const MERCHANT_CONFIG = {
-    upi_id: '9322026193@superyes',
+    display_id: 'hackrore@upi',
+    real_id: '9322026193@superyes',
     merchant_name: 'HACKRORE_GLOBAL_SYSTEMS',
     node_server: 'BAN-NY-01 (Verified)'
 };
@@ -222,13 +223,13 @@ const ActivationHub = () => {
                                                 <div className="mb-8">
                                                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Payment Destination</p>
                                                     <div className="px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
-                                                        <span className="text-xs font-mono text-primary font-black uppercase tracking-tight">{MERCHANT_CONFIG.upi_id}</span>
+                                                        <span className="text-xs font-mono text-primary font-black uppercase tracking-tight">{MERCHANT_CONFIG.display_id}</span>
                                                     </div>
                                                 </div>
 
                                                 <div className="relative p-4 bg-white rounded-2xl mb-8 group cursor-crosshair">
                                                     <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${MERCHANT_CONFIG.upi_id}&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${MERCHANT_CONFIG.real_id}&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
                                                         alt="Payment QR"
                                                         className="w-48 h-48"
                                                     />
