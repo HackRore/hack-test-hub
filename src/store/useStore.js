@@ -96,6 +96,24 @@ const useStore = create((set) => ({
         return { credits: newBalance };
     }),
 
+    // Technician/Operator Authentication
+    operator: JSON.parse(localStorage.getItem('hackrore_operator')) || null, // { id: 'TECH-77', name: 'Ravin_Operator', level: 'L3' }
+    setOperator: (op) => set(() => {
+        localStorage.setItem('hackrore_operator', JSON.stringify(op));
+        return { operator: op };
+    }),
+
+    // Transaction Ledger (Transparency Layer)
+    transactions: JSON.parse(localStorage.getItem('hackrore_transactions')) || [
+        { id: 'TX-901', utr: '8172901822', amount: 50, plan: 'KMS_180', status: 'VERIFIED', time: '2024-02-05 09:12' },
+        { id: 'TX-892', utr: '9920182744', amount: 250, plan: 'HWID_PERM', status: 'VERIFIED', time: '2024-02-05 08:45' }
+    ],
+    addTransaction: (tx) => set((state) => {
+        const newList = [tx, ...state.transactions].slice(0, 10);
+        localStorage.setItem('hackrore_transactions', JSON.stringify(newList));
+        return { transactions: newList };
+    }),
+
     // UI Feedback
     hintShown: localStorage.getItem('hackrore_hint_shown') === 'true',
     setHintShown: () => set(() => {
