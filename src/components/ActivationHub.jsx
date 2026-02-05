@@ -97,21 +97,31 @@ const ActivationHub = () => {
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.async = true;
-            document.body.appendChild(script);
+
+            // Add timeout to prevent infinite loading
+            const timeout = setTimeout(() => {
+                console.error('❌ Razorpay SDK loading timeout');
+                setPaymentError('Payment gateway loading timeout. Please try again.');
+                setIsPaying(false);
+            }, 10000); // 10 second timeout
 
             script.onload = () => {
+                clearTimeout(timeout);
                 console.log('✅ Razorpay SDK loaded successfully');
                 initiateRazorpayPayment(plan);
             };
 
             script.onerror = () => {
+                clearTimeout(timeout);
                 console.error('❌ Failed to load Razorpay SDK');
                 setPaymentError('Failed to load payment gateway. Please check your internet connection.');
                 setIsPaying(false);
             };
+
+            document.body.appendChild(script);
         } catch (error) {
             console.error('❌ Error in handleInitiate:', error);
-            setPaymentError('Failed to load payment gateway');
+            setPaymentError('Failed to load payment gateway: ' + error.message);
             setIsPaying(false);
         }
     };
