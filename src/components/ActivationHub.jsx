@@ -79,28 +79,47 @@ const ActivationHub = () => {
     };
 
     const handleInitiate = async (plan) => {
+        console.log('🚀 Payment initiated for plan:', plan.id);
         setSelectedPlan(plan);
         setIsPaying(true);
         setPaymentError('');
 
         try {
+            // Check if Razorpay script is already loaded
+            if (window.Razorpay) {
+                console.log('✅ Razorpay SDK already loaded');
+                await initiateRazorpayPayment(plan);
+                return;
+            }
+
             // Load Razorpay script
+            console.log('📦 Loading Razorpay SDK...');
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.async = true;
             document.body.appendChild(script);
 
             script.onload = () => {
+                console.log('✅ Razorpay SDK loaded successfully');
                 initiateRazorpayPayment(plan);
             };
+
+            script.onerror = () => {
+                console.error('❌ Failed to load Razorpay SDK');
+                setPaymentError('Failed to load payment gateway. Please check your internet connection.');
+                setIsPaying(false);
+            };
         } catch (error) {
-            console.error('Error loading Razorpay:', error);
+            console.error('❌ Error in handleInitiate:', error);
             setPaymentError('Failed to load payment gateway');
+            setIsPaying(false);
         }
     };
 
     const initiateRazorpayPayment = async (plan) => {
         try {
+            console.log('🔄 Creating payment order for plan:', plan.id);
+
             // Create order via backend API (server validates price)
             const orderResponse = await fetch('/api/create-order', {
                 method: 'POST',
@@ -111,15 +130,28 @@ const ActivationHub = () => {
                 })
             });
 
+            console.log('📡 Order API response status:', orderResponse.status);
+
             if (!orderResponse.ok) {
-                throw new Error('Failed to create payment order');
+                const errorData = await orderResponse.json();
+                console.error('❌ Order creation failed:', errorData);
+                throw new Error(errorData.error || 'Failed to create payment order');
             }
 
             const orderData = await orderResponse.json();
+            console.log('✅ Order created:', orderData.orderId);
+
+            // Check if Razorpay key is available
+            const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+            console.log('🔑 Razorpay Key ID:', razorpayKey ? 'Present' : 'MISSING!');
+
+            if (!razorpayKey) {
+                throw new Error('Razorpay API key not configured');
+            }
 
             // Configure Razorpay checkout options
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                key: razorpayKey,
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: 'HackRore Activation Hub',
@@ -133,24 +165,27 @@ const ActivationHub = () => {
                     color: '#00ff41'
                 },
                 handler: async function (response) {
+                    console.log('✅ Payment successful:', response.razorpay_payment_id);
                     // Payment successful, verify signature
                     await handlePaymentSuccess(response, plan);
                 },
                 modal: {
                     ondismiss: function () {
+                        console.log('⚠️ Payment cancelled by user');
                         setIsPaying(false);
                         setPaymentError('Payment cancelled by user');
                     }
                 }
             };
 
+            console.log('🎨 Opening Razorpay checkout...');
             // Open Razorpay checkout
             const razorpay = new window.Razorpay(options);
             razorpay.open();
 
         } catch (error) {
-            console.error('Error initiating payment:', error);
-            setPaymentError(error.message);
+            console.error('❌ Error initiating payment:', error);
+            setPaymentError(error.message || 'Failed to initiate payment');
             setIsPaying(false);
         }
     };
