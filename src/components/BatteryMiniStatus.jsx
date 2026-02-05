@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Battery, BatteryCharging } from 'lucide-react';
+import useStore from '../store/useStore';
 
 const BatteryMiniStatus = () => {
+    const { isAdvancedView } = useStore();
     const [battery, setBattery] = useState(null);
 
     useEffect(() => {
@@ -24,7 +26,7 @@ const BatteryMiniStatus = () => {
     const level = Math.round(battery.level * 100);
 
     return (
-        <div className="flex items-center gap-3 bg-gray-900/50 border border-gray-800 rounded-lg px-4 py-2 font-mono shadow-inner">
+        <div className={`flex items-center gap-3 border px-4 py-2 font-sans shadow-inner transition-all duration-500 ${isAdvancedView ? 'bg-black/60 border-primary/20 rounded-none' : 'bg-white/5 border-white/5 rounded-3xl'}`}>
             <div className="relative">
                 {battery.charging ? (
                     <BatteryCharging className="h-4 w-4 text-primary animate-pulse" />

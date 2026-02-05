@@ -14,7 +14,7 @@ const Header = () => {
     }, []);
 
     return (
-        <header className="border-b border-white/5 bg-[#0f172a]/80 backdrop-blur-xl sticky top-0 z-[100]">
+        <header className="border-b border-white/5 sticky top-0 z-[100] transition-colors duration-500" style={{ backgroundColor: 'var(--bg-color)' }}>
             <div className="container mx-auto px-6 h-20 flex items-center justify-between">
                 {/* Logo */}
                 <div
@@ -58,7 +58,7 @@ const Header = () => {
 
                 {/* Nav Links (Mock) */}
                 <nav className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-gray-400">
-                    <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 mr-4">
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${isAdvancedView ? 'bg-black border-primary/20 mr-4' : 'bg-white/5 border-white/5 mr-4'}`}>
                         <CreditCard className="h-3 w-3 text-yellow-500" />
                         <span className="text-white font-black">{credits}</span>
                     </div>
