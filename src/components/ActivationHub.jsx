@@ -55,6 +55,12 @@ const ACTIVATION_PLANS = [
     }
 ];
 
+const MERCHANT_CONFIG = {
+    upi_id: 'hackrore@upi',
+    merchant_name: 'HACKRORE_GLOBAL_SYSTEMS',
+    node_server: 'BAN-NY-01 (Verified)'
+};
+
 const ActivationHub = () => {
     const { setActiveTool, isAdvancedView, operator, setOperator, transactions, addTransaction } = useStore();
     const [selectedPlan, setSelectedPlan] = useState(null);
@@ -213,9 +219,16 @@ const ActivationHub = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2">
                                             {/* Left: QR Side */}
                                             <div className="p-12 border-r border-white/5 flex flex-col items-center justify-center text-center bg-white/5">
+                                                <div className="mb-8">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Payment Destination</p>
+                                                    <div className="px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
+                                                        <span className="text-xs font-mono text-primary font-black uppercase tracking-tight">{MERCHANT_CONFIG.upi_id}</span>
+                                                    </div>
+                                                </div>
+
                                                 <div className="relative p-4 bg-white rounded-2xl mb-8 group cursor-crosshair">
                                                     <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hackrore@upi&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${MERCHANT_CONFIG.upi_id}&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
                                                         alt="Payment QR"
                                                         className="w-48 h-48"
                                                     />
@@ -223,7 +236,7 @@ const ActivationHub = () => {
                                                 </div>
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Scan with UPI App</p>
                                                 <div className="flex items-center gap-2 text-white font-mono text-lg">
-                                                    <span className="text-gray-500 font-sans tracking-tight">Amount:</span>
+                                                    <span className="text-gray-500 font-sans tracking-tight">Amount Due:</span>
                                                     <span>₹{selectedPlan.cost}</span>
                                                 </div>
                                             </div>
@@ -232,7 +245,7 @@ const ActivationHub = () => {
                                             <div className="p-12 flex flex-col justify-between">
                                                 <div>
                                                     <div className="mb-8 p-6 bg-black border border-white/5 rounded-2xl">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 block">Transaction Ref (UTR)</label>
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 block">Transaction Ref (UTR) Confirmation</label>
                                                         <input
                                                             type="text"
                                                             placeholder="XXXX-XXXX-XXXX"
@@ -241,15 +254,18 @@ const ActivationHub = () => {
                                                             className="w-full bg-transparent border-b border-white/10 py-2 outline-none text-primary font-mono text-sm focus:border-primary transition-colors"
                                                         />
                                                     </div>
-                                                    <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-tight">Security Protocol</h2>
+
+                                                    <h2 className="text-xl font-black text-white mb-6 uppercase tracking-tight">Verification Protocol</h2>
                                                     <div className="space-y-6">
                                                         <div className="flex gap-4">
                                                             <div className="p-2 bg-primary/10 rounded-lg h-fit">
                                                                 <ShieldCheck className="h-4 w-4 text-primary" />
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Encrypted Gateway</p>
-                                                                <p className="text-[11px] text-gray-500 font-medium">Your transaction signature is validated against the licensing node.</p>
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Automated UTR Check</p>
+                                                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
+                                                                    System cross-references your **UTR Reference** with the **{MERCHANT_CONFIG.node_server}** banking node to confirm incoming liquidity.
+                                                                </p>
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-4">
@@ -257,8 +273,10 @@ const ActivationHub = () => {
                                                                 <Check className="h-4 w-4 text-blue-500" />
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Post-Auth Logic</p>
-                                                                <p className="text-[11px] text-gray-500 font-medium">Activation executes immediately upon transaction confirmation.</p>
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Instant Provisioning</p>
+                                                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
+                                                                    Upon confirmation (usually &lt; 30s), the licensing payload is decrypted and released to your technician dashboard.
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
