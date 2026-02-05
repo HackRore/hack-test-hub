@@ -26,7 +26,8 @@ const benchmarkTests = [
     { id: 'gpu', title: 'Graphics Power', icon: Activity, desc: 'Benchmark your GPU with 3D particle rendering.', btn: 'Start GPU' },
     { id: 'storage', title: 'Storage Speed', icon: HardDrive, desc: 'Measure how fast your drive reads and writes.', btn: 'Test Drive' },
     { id: 'battery', title: 'Battery Health', icon: Battery, desc: 'Analyze battery wear and energy capacity.', btn: 'Check Health', qcId: 'battery' },
-    { id: 'resources', title: 'Resource Hub', icon: Terminal, desc: 'Toolkit for system repair and terminal commands.', btn: 'Open Hub' },
+    { id: 'resources', title: 'Resource Library', desc: 'Technician tools & software vault.', icon: Package },
+    { id: 'activation', title: 'Activation Hub', desc: 'Windows & Office provisioning.', icon: ShieldCheck },
     { id: 'qc', title: 'System Report', icon: CheckCircle2, desc: 'Generate a professional certification for this PC.', btn: 'Start Wizard' },
 ];
 

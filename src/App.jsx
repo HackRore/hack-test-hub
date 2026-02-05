@@ -19,6 +19,7 @@ import TouchTest from './components/TouchTest';
 import QCWizard from './components/QCWizard';
 import ResourceHub from './components/ResourceHub';
 import BootScreen from './components/BootScreen';
+import ActivationHub from './components/ActivationHub';
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
       case 'qc': return <QCWizard />;
       case 'resources': return <ResourceHub />;
       case 'battery': return <BatteryProBridge />;
+      case 'activation': return <ActivationHub />;
       default: return <Dashboard />;
     }
   };

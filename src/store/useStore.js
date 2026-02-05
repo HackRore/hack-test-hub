@@ -83,7 +83,20 @@ const useStore = create((set) => ({
         return { hasBooted: true };
     }),
 
-    // UI Hints
+    // Credits & Transaction State
+    credits: parseInt(localStorage.getItem('hackrore_credits')) || 500,
+    deductCredits: (amount) => set((state) => {
+        const newBalance = Math.max(0, state.credits - amount);
+        localStorage.setItem('hackrore_credits', newBalance);
+        return { credits: newBalance };
+    }),
+    addCredits: (amount) => set((state) => {
+        const newBalance = state.credits + amount;
+        localStorage.setItem('hackrore_credits', newBalance);
+        return { credits: newBalance };
+    }),
+
+    // UI Feedback
     hintShown: localStorage.getItem('hackrore_hint_shown') === 'true',
     setHintShown: () => set(() => {
         localStorage.setItem('hackrore_hint_shown', 'true');
