@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useStore from '../store/useStore';
-import { ArrowLeft, Cpu, Activity, Zap, Layers } from 'lucide-react';
+import { ArrowLeft, Cpu, Activity, Zap, Layers, Download } from 'lucide-react';
 import * as THREE from 'three';
 
 const GpuTest = () => {
@@ -141,13 +141,25 @@ const GpuTest = () => {
 
             {/* HUD Overlay */}
             <div className="absolute top-0 left-0 w-full p-6 z-10 flex flex-col pointer-events-none">
-                <div className="flex items-center justify-between mb-8 pointer-events-auto">
-                    <button
-                        onClick={() => setActiveTool(null)}
-                        className="text-white hover:text-[#00ff41] bg-black/50 backdrop-blur px-4 py-2 rounded border border-gray-700 font-mono flex items-center gap-2 transition-colors"
-                    >
-                        <ArrowLeft className="h-4 w-4" /> STOP ENGINE
-                    </button>
+                <div className="flex items-start justify-between mb-8 pointer-events-auto">
+                    <div className="flex flex-col gap-4">
+                        <button
+                            onClick={() => setActiveTool(null)}
+                            className="text-white hover:text-[#00ff41] bg-black/50 backdrop-blur px-4 py-2 rounded border border-gray-700 font-mono flex items-center gap-2 transition-colors w-fit"
+                        >
+                            <ArrowLeft className="h-4 w-4" /> STOP ENGINE
+                        </button>
+
+                        <a
+                            href="https://sourceforge.net/projects/furmark/files/latest/download"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/50 px-4 py-2.5 rounded font-black font-mono tracking-widest flex items-center gap-2 transition-all shadow-xl group/furmark"
+                        >
+                            <Download className="h-3.5 w-3.5 group-hover/furmark:bounce" />
+                            EXTERNAL_STRESSOR (FURMARK)
+                        </a>
+                    </div>
 
                     <div className="flex flex-col items-end gap-2">
                         <div className="text-[#00ff41] font-black text-5xl font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(0,255,65,0.6)]">

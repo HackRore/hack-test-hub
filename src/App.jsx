@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from './store/useStore';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -17,10 +17,20 @@ import CpuTest from './components/CpuTest';
 import GPUTest from './components/GPUTest';
 import TouchTest from './components/TouchTest';
 import QCWizard from './components/QCWizard';
+import ResourceHub from './components/ResourceHub';
+import BootScreen from './components/BootScreen';
 
 
 function App() {
-  const { activeTool } = useStore();
+  const { activeTool, hasBooted } = useStore();
+  const [isBooting, setIsBooting] = useState(!hasBooted);
+
+  // Skip boot if we've already done it once in the past
+  useEffect(() => {
+    if (hasBooted) {
+      setIsBooting(false);
+    }
+  }, [hasBooted]);
 
   const renderContent = () => {
     switch (activeTool) {
@@ -36,28 +46,39 @@ function App() {
       case 'gpu': return <GPUTest />;
       case 'touch': return <TouchTest />;
       case 'qc': return <QCWizard />;
+      case 'resources': return <ResourceHub />;
       case 'battery': return <BatteryProBridge />;
       default: return <Dashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background text-gray-100 font-mono selection:bg-primary selection:text-black">
-      <Header />
-      <main className="flex-1">
-        <AnimatePresence mode="wait">
-          <Motion.div
-            key={activeTool || 'dashboard'}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderContent()}
-          </Motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
+    <>
+      <AnimatePresence>
+        {isBooting && <BootScreen onComplete={() => setIsBooting(false)} />}
+      </AnimatePresence>
+
+      <div className={`min-h-screen bg-transparent text-gray-100 font-sans selection:bg-primary selection:text-black transition-opacity duration-1000 ${isBooting ? 'opacity-0' : 'opacity-100'}`}>
+        {!isBooting && (
+          <>
+            <Header />
+            <main className="flex-1">
+              <AnimatePresence mode="wait">
+                <Motion.div
+                  key={activeTool || 'dashboard'}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  {renderContent()}
+                </Motion.div>
+              </AnimatePresence>
+            </main>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

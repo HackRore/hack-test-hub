@@ -177,7 +177,7 @@ const BatteryProBridge = () => {
                                 {battery?.charging ? (
                                     <BatteryCharging className="h-20 w-20 text-[#00ff41] animate-pulse relative z-10" />
                                 ) : (
-                                    <Battery className={`h-20 w-20 relative z-10 ${level < 20 ? 'text-red-500' : 'text-primary'}`} />
+                                    <Battery className={`h-20 w-20 relative z-10 ${(battery?.level || 0) * 100 < 20 ? 'text-red-500' : 'text-primary'}`} />
                                 )}
                             </div>
                             <div className="space-y-3">

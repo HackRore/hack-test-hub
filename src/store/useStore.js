@@ -45,6 +45,21 @@ const useStore = create((set) => ({
         return { storageMetadata: newData };
     }),
 
+    // System Identity Persistence (Machine Metadata)
+    systemIdentity: JSON.parse(localStorage.getItem('hackrore_system_identity')) || {
+        modelName: '',
+        serialNumber: '',
+        processor: '',
+        ramFrequency: '',
+        storageBrand: '',
+        gpuDetails: ''
+    },
+    setSystemIdentity: (identity) => set((state) => {
+        const newData = { ...state.systemIdentity, ...identity };
+        localStorage.setItem('hackrore_system_identity', JSON.stringify(newData));
+        return { systemIdentity: newData };
+    }),
+
     // QC Wizard State
     qcResults: {}, // { testId: 'pass' | 'fail' | null }
     setQCResult: (id, status) => set((state) => ({
@@ -53,6 +68,27 @@ const useStore = create((set) => ({
     resetQC: () => set({ qcResults: {}, wizardStep: 0 }),
     wizardStep: 0,
     setWizardStep: (step) => set({ wizardStep: step }),
+
+    // UI Preferences & UX State
+    isAdvancedView: localStorage.getItem('hackrore_advanced_view') === 'true',
+    setAdvancedView: (isAdvanced) => set(() => {
+        localStorage.setItem('hackrore_advanced_view', isAdvanced);
+        return { isAdvancedView: isAdvanced };
+    }),
+
+    // First Visit Detection (Persistent)
+    hasBooted: localStorage.getItem('hackrore_has_booted') === 'true',
+    setHasBooted: () => set(() => {
+        localStorage.setItem('hackrore_has_booted', 'true');
+        return { hasBooted: true };
+    }),
+
+    // UI Hints
+    hintShown: localStorage.getItem('hackrore_hint_shown') === 'true',
+    setHintShown: () => set(() => {
+        localStorage.setItem('hackrore_hint_shown', 'true');
+        return { hintShown: true };
+    }),
 }));
 
 export default useStore;
