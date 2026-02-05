@@ -69,8 +69,8 @@ const ActivationHub = () => {
     const [isProvisioning, setIsProvisioning] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const [provisioningStep, setProvisioningStep] = useState(0);
-    const [utr, setUtr] = useState('');
     const [authId, setAuthId] = useState('');
+    const [paymentError, setPaymentError] = useState('');
 
     const handleOperatorAuth = (e) => {
         e.preventDefault();
@@ -78,44 +78,138 @@ const ActivationHub = () => {
         setOperator({ id: `TECH-${Math.floor(Math.random() * 999)}`, name: authId, level: 'L2_OFFICER' });
     };
 
-    const handleInitiate = (plan) => {
+    const handleInitiate = async (plan) => {
         setSelectedPlan(plan);
         setIsPaying(true);
-        setUtr('');
+        setPaymentError('');
+
+        try {
+            // Load Razorpay script
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.async = true;
+            document.body.appendChild(script);
+
+            script.onload = () => {
+                initiateRazorpayPayment(plan);
+            };
+        } catch (error) {
+            console.error('Error loading Razorpay:', error);
+            setPaymentError('Failed to load payment gateway');
+        }
     };
 
-    const handleConfirmPayment = async () => {
-        if (!utr) return;
+    const initiateRazorpayPayment = async (plan) => {
+        try {
+            // Create order via backend API (server validates price)
+            const orderResponse = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: plan.id,
+                    operatorId: operator.id
+                })
+            });
+
+            if (!orderResponse.ok) {
+                throw new Error('Failed to create payment order');
+            }
+
+            const orderData = await orderResponse.json();
+
+            // Configure Razorpay checkout options
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'HackRore Activation Hub',
+                description: `${plan.title} - ${plan.subtitle}`,
+                order_id: orderData.orderId,
+                prefill: {
+                    name: operator.name,
+                    contact: '9322026193'
+                },
+                theme: {
+                    color: '#00ff41'
+                },
+                handler: async function (response) {
+                    // Payment successful, verify signature
+                    await handlePaymentSuccess(response, plan);
+                },
+                modal: {
+                    ondismiss: function () {
+                        setIsPaying(false);
+                        setPaymentError('Payment cancelled by user');
+                    }
+                }
+            };
+
+            // Open Razorpay checkout
+            const razorpay = new window.Razorpay(options);
+            razorpay.open();
+
+        } catch (error) {
+            console.error('Error initiating payment:', error);
+            setPaymentError(error.message);
+            setIsPaying(false);
+        }
+    };
+
+    const handlePaymentSuccess = async (razorpayResponse, plan) => {
         setIsPaying(false);
         setIsProvisioning(true);
         setProvisioningStep(0);
 
-        // Simulation sequence
-        const steps = [
-            "Connecting to Central Banking Node...",
-            "Authenticating UTR Signature...",
-            "Validating transaction liquidity...",
-            "Provisioning license payload...",
-            "Awaiting system handshake..."
-        ];
+        try {
+            // Verify payment signature via backend
+            const verifyResponse = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    razorpay_order_id: razorpayResponse.razorpay_order_id,
+                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                    razorpay_signature: razorpayResponse.razorpay_signature
+                })
+            });
 
-        for (let i = 0; i < steps.length; i++) {
-            setProvisioningStep(i);
-            await new Promise(r => setTimeout(r, 1200));
+            const verifyData = await verifyResponse.json();
+
+            if (!verifyData.verified) {
+                throw new Error('Payment verification failed');
+            }
+
+            // Simulate provisioning steps with "Hardware Verified" animation
+            const steps = [
+                "Authenticating payment signature...",
+                "Validating transaction integrity...",
+                "Decrypting license payload...",
+                "Provisioning activation token...",
+                "Hardware verification complete."
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                setProvisioningStep(i);
+                await new Promise(r => setTimeout(r, 1200));
+            }
+
+            // Add to transaction ledger
+            addTransaction({
+                id: `TX-${Math.floor(Math.random() * 999)}`,
+                utr: razorpayResponse.razorpay_payment_id,
+                amount: plan.cost,
+                plan: plan.id,
+                status: 'VERIFIED',
+                time: new Date().toLocaleString()
+            });
+
+            setIsProvisioning(false);
+            setIsCompleted(true);
+
+        } catch (error) {
+            console.error('Payment verification error:', error);
+            setIsProvisioning(false);
+            setPaymentError('Payment verification failed. Please contact support.');
         }
-
-        // Add to ledger for transparency
-        addTransaction({
-            id: `TX-${Math.floor(Math.random() * 999)}`,
-            utr,
-            amount: selectedPlan.cost,
-            plan: selectedPlan.id,
-            status: 'VERIFIED',
-            time: new Date().toLocaleString()
-        });
-
-        setIsProvisioning(false);
-        setIsCompleted(true);
     };
 
     const handleCopy = () => {
@@ -213,94 +307,41 @@ const ActivationHub = () => {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="max-w-4xl mx-auto"
+                                className="max-w-2xl mx-auto py-20 text-center"
                             >
                                 <TacticalFrame>
-                                    <div className="bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[inherit] overflow-hidden">
-                                        <div className="grid grid-cols-1 md:grid-cols-2">
-                                            {/* Left: QR Side */}
-                                            <div className="p-12 border-r border-white/5 flex flex-col items-center justify-center text-center bg-white/5">
-                                                <div className="mb-8">
-                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Payment Destination</p>
-                                                    <div className="px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
-                                                        <span className="text-xs font-mono text-primary font-black uppercase tracking-tight">{MERCHANT_CONFIG.display_id}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="relative p-4 bg-white rounded-2xl mb-8 group cursor-crosshair">
-                                                    <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${MERCHANT_CONFIG.real_id}&am=${selectedPlan.cost}&tn=Activation_${selectedPlan.id}`}
-                                                        alt="Payment QR"
-                                                        className="w-48 h-48"
+                                    <div className="bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[inherit] p-12">
+                                        {paymentError ? (
+                                            <>
+                                                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-8" />
+                                                <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Payment Error</h2>
+                                                <p className="text-sm text-gray-400 mb-8">{paymentError}</p>
+                                                <Motion.button
+                                                    onClick={() => { setIsPaying(false); setPaymentError(''); }}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    className="px-8 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-black text-[10px] tracking-widest uppercase hover:bg-white/10 transition-all"
+                                                >
+                                                    Try Again
+                                                </Motion.button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="relative w-24 h-24 mb-12 mx-auto">
+                                                    <Motion.div
+                                                        animate={{ rotate: 360 }}
+                                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                                        className="absolute inset-0 border-4 border-primary/20 border-t-primary rounded-full"
                                                     />
-                                                    <div className="absolute inset-0 border-2 border-primary/20 group-hover:border-primary transition-colors pointer-events-none rounded-2xl" />
-                                                </div>
-                                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Scan with UPI App</p>
-                                                <div className="flex items-center gap-2 text-white font-mono text-lg">
-                                                    <span className="text-gray-500 font-sans tracking-tight">Amount Due:</span>
-                                                    <span>₹{selectedPlan.cost}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Right: Info Side */}
-                                            <div className="p-12 flex flex-col justify-between">
-                                                <div>
-                                                    <div className="mb-8 p-6 bg-black border border-white/5 rounded-2xl">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3 block">Transaction Ref (UTR) Confirmation</label>
-                                                        <input
-                                                            type="text"
-                                                            placeholder="XXXX-XXXX-XXXX"
-                                                            value={utr}
-                                                            onChange={(e) => setUtr(e.target.value)}
-                                                            className="w-full bg-transparent border-b border-white/10 py-2 outline-none text-primary font-mono text-sm focus:border-primary transition-colors"
-                                                        />
-                                                    </div>
-
-                                                    <h2 className="text-xl font-black text-white mb-6 uppercase tracking-tight">Verification Protocol</h2>
-                                                    <div className="space-y-6">
-                                                        <div className="flex gap-4">
-                                                            <div className="p-2 bg-primary/10 rounded-lg h-fit">
-                                                                <ShieldCheck className="h-4 w-4 text-primary" />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Automated UTR Check</p>
-                                                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-                                                                    System cross-references your **UTR Reference** with the **{MERCHANT_CONFIG.node_server}** banking node to confirm incoming liquidity.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-4">
-                                                            <div className="p-2 bg-blue-500/10 rounded-lg h-fit">
-                                                                <Check className="h-4 w-4 text-blue-500" />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Instant Provisioning</p>
-                                                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-                                                                    Upon confirmation (usually &lt; 30s), the licensing payload is decrypted and released to your technician dashboard.
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <CreditCard className="h-8 w-8 text-primary animate-pulse" />
                                                     </div>
                                                 </div>
-
-                                                <div className="mt-12 space-y-4">
-                                                    <Motion.button
-                                                        onClick={handleConfirmPayment}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        className="w-full bg-primary text-black py-5 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase shadow-lg shadow-primary/20"
-                                                    >
-                                                        Confirm & Finalize
-                                                    </Motion.button>
-                                                    <button
-                                                        onClick={() => setIsPaying(false)}
-                                                        className="w-full text-gray-500 hover:text-white py-2 text-[10px] font-black tracking-widest uppercase transition-colors"
-                                                    >
-                                                        Abort Transaction
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                <h2 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Initializing Secure Payment</h2>
+                                                <p className="text-sm text-gray-400 mb-2">Loading Razorpay checkout...</p>
+                                                <p className="text-xs text-gray-600">Plan: {selectedPlan?.title} - ₹{selectedPlan?.cost}</p>
+                                            </>
+                                        )}
                                     </div>
                                 </TacticalFrame>
                             </Motion.div>
