@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useStore from '../store/useStore';
 import {
-    ShieldCheck, Key, Zap, Check, Lock,
+    ShieldCheck, Key, Zap, Check, Lock, Shield,
     ArrowLeft, HelpCircle, AlertCircle, Terminal,
     Copy, Info, CreditCard, ChevronRight
 } from 'lucide-react';
